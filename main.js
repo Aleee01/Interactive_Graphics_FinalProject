@@ -23,8 +23,8 @@ camera.lookAt(new THREE.Vector3(0, 2.5, 0));
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
 renderer.setSize(sizes.width, sizes.height);
-renderer.shadowMap.enabled = true; // Abilita le ombre nel renderer
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Tipo di mappa delle ombre (opzionale, può essere cambiato in base alle esigenze)
+renderer.shadowMap.enabled = true; 
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
 
 
 gameContainer.appendChild(renderer.domElement);
@@ -61,8 +61,6 @@ document.querySelectorAll('input[name="character"]').forEach((radio) => {
   radio.addEventListener('change', (event) => {
     resetGame()
     character = event.target.value;
-    let pathMTL;
-    let pathOBJ;
     if(character === "Patrick") {
       loadPatrick();
     } else if(character === "Spongebob") {
@@ -215,7 +213,6 @@ function moveModel() {
 
   const targetPosition = model.position.clone().add(direction);
 
-  // Wrap around grid boundaries
   if (targetPosition.x < 0) targetPosition.x = resolution.x - 1;
   if (targetPosition.x >= resolution.x) targetPosition.x = 0;
   if (targetPosition.z < 0) targetPosition.z = resolution.y - 1;
@@ -228,7 +225,7 @@ function moveModel() {
   moveGhostTowardsModel();
   checkSphereCollision();
   checkBoxCollision();
-  checkGhostCollision();
+  checkGhostCollision(); 
 }
 
 
@@ -246,7 +243,6 @@ function moveGhostTowardsModel() {
 
   const targetPosition = ghost.position.clone().add(directionToModel);
 
-  // Wrap around grid boundaries
   if (targetPosition.x < 0) targetPosition.x = resolution.x - 1;
   if (targetPosition.x >= resolution.x) targetPosition.x = 0;
   if (targetPosition.z < 0) targetPosition.z = resolution.y - 1;
@@ -256,7 +252,6 @@ function moveGhostTowardsModel() {
     .to({ x: targetPosition.x, z: targetPosition.z }, speedGhost)
     .start();
 
-  // Update rotation based on movement direction
   if (directionToModel.x === 1) {
     ghost.rotation.y = -Math.PI / 2;
   } else if (directionToModel.x === -1) {
@@ -271,22 +266,20 @@ function moveGhostTowardsModel() {
 const dirLight = new THREE.DirectionalLight(0xffffff, 3);
 dirLight.position.set(10, 10, 10);
 dirLight.target.position.set(resolution.x / 2, 0, resolution.y / 2);
-dirLight.castShadow = true; // Abilita le ombre per la luce direzionale
+dirLight.castShadow = true; 
 
-// Configurazioni aggiuntive per le ombre
-dirLight.shadow.mapSize.set(1024, 1024); // Dimensione della mappa delle ombre
-dirLight.shadow.radius = 6; // Raggio di sfocatura delle ombre (opzionale)
-dirLight.shadow.camera.top = resolution.y / 2; // Estensione della telecamera delle ombre
+dirLight.shadow.mapSize.set(1024, 1024); 
+dirLight.shadow.radius = 6; 
+dirLight.shadow.camera.top = resolution.y / 2; 
 dirLight.shadow.camera.bottom = -resolution.y / 2;
 dirLight.shadow.camera.left = -resolution.x / 2;
 dirLight.shadow.camera.right = resolution.x / 2;
 
 scene.add(dirLight);
 
-
 function animate() {
   controls.update();
-  TWEEN.update(); // Update the TWEEN animations
+  TWEEN.update(); 
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
@@ -490,7 +483,7 @@ function createSphere(color, points) {
     const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     sphere.castShadow = true
     sphere.receiveShadow = true
-    sphere.userData.points = points; // 10 punti
+    sphere.userData.points = points; 
     sphere.position.set(pos.x, 20, pos.z);
     spheres.push(sphere);
     scene.add(sphere);
@@ -509,7 +502,7 @@ function createPrism(color) {
       pos = getRandomPosition();
     }
 
-    const prismGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 3); // Prisma triangolare
+    const prismGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 3); 
     const prismMaterial = new THREE.MeshStandardMaterial({ color: color });
     const prism = new THREE.Mesh(prismGeometry, prismMaterial);
     prism.castShadow = true
@@ -594,10 +587,8 @@ function checkBoxCollision() {
       const effectType = Math.random();
 
       if (effectType < 0.5) {
-        // Effetto: punti doppi per 10 secondi
         applyDoublePointsEffect();
       } else {
-        // Effetto: punti dimezzati per 10 secondi
         applyHalfPointsEffect();
       }
       startEffectTimer();
@@ -687,7 +678,6 @@ function isPositionOccupied(pos) {
 
 function checkGhostCollision() {
   if (model && ghost && Math.round(model.position.x) === Math.round(ghost.position.x) && Math.round(model.position.z) === Math.round(ghost.position.z)) {
-    // Fermare il gioco e mostrare il messaggio di game over
     clearInterval(moveInterval); 
     stopBoxGeneration()
     Swal.fire({
@@ -726,7 +716,7 @@ function checkSphereCollision() {
       addToScore(sphere.userData.points);
     }
     if (redSphereCount===0 && greenSphereCount===0) {
-      endTime = Date.now(); // Memorizza il tempo di fineù
+      endTime = Date.now(); 
       calculateTime()
       stopGame()
       Swal.fire({
@@ -767,11 +757,11 @@ function checkSphereCollision() {
 let blocked = false;
 
 function freezeGhost() {
-  blocked = true; // Imposta blocked a true
+  blocked = true; 
 
   setTimeout(() => {
-    blocked = false; // Dopo 10 secondi, reimposta blocked a false
-  }, 10000); // 10000 millisecondi = 10 secondi
+    blocked = false; 
+  }, 10000); 
 }
 
 function addToScore(points) {
