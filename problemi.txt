@@ -1,0 +1,19 @@
+
+migliorare inseguimento
+aggiungi musica
+aggiungi alert game over o vittoria
+aggiungi + fantasmi in difficile ??
+gestisci grandezze modelli
+aggiungi ombre
+aggiungi cubi per + punti
+aggiungi classifica
+migliora sfondo e grafica
+aggiungi cambio direzione luce manuale
+rivedi meccanismo vittoria
+rivedi logica cubi
+
+
+cubi
+grandezza obj
+colori e grafica
+luci
