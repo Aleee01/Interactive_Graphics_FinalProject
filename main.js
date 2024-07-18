@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 import TWEEN from '@tweenjs/tween.js';
 
 const gameContainer = document.getElementById('game-container');
@@ -53,46 +54,93 @@ function getRandomPosition() {
   };
 }
 
+let character;
 let model;
-function loadModels() {
-  const loader = new OBJLoader();
-  loader.load('spongebob.obj', (object) => {
-    model = object;
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3());
-    const maxDimension = Math.max(size.x, size.y, size.z);
-    let scale = 1 / maxDimension;
-    scale *= 1.5
-    model.scale.set(scale, scale, scale);
 
-    const pos = getRandomPosition();
-    model.position.set(pos.x, -0.5, pos.z);
+document.querySelectorAll('input[name="character"]').forEach((radio) => {
+  radio.addEventListener('change', (event) => {
+    resetGame()
+    character = event.target.value;
+    let pathMTL;
+    let pathOBJ;
+    if(character === "Patrick") {
+      loadPatrick();
+    } else if(character === "Spongebob") {
+      loadSpongebob();
+    }
+  });
+});
 
-    model.traverse((child) => {
-      if (child.isMesh) {
-        child.material = new THREE.MeshStandardMaterial({ color: 0xffff00 });
-      }
+function loadPatrick() {
+  const mtlLoader = new MTLLoader();
+  mtlLoader.load('Patrick_.blend/Patrick.mtl', (materials) => {
+    materials.preload();
+    const objLoader = new OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.load('Patrick_.blend/Patrick.obj', (object) => {
+      model = object;
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDimension = Math.max(size.x, size.y, size.z);
+      let scale = 1 / maxDimension;
+      scale *= 1.5;
+      model.scale.set(scale, scale, scale);
+
+      const pos = getRandomPosition();
+      model.position.set(pos.x, 0, pos.z);
+
+      model.castShadow = true
+      model.receiveShadow = true
+
+      scene.add(model);
+      loadGhost();
+    }, undefined, (error) => {
+      console.error(error);
     });
-
-    model.castShadow = true
-    model.receiveShadow = true
-    scene.add(model);
-    loadGhost();
   }, undefined, (error) => {
     console.error(error);
   });
 }
+
+function loadSpongebob() {
+  const mtlLoader = new MTLLoader();
+  mtlLoader.load('Patrick_.blend/Spongebob_blend.mtl', (materials) => {
+    materials.preload();
+    const objLoader = new OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.load('Patrick_.blend/Spongebob_blend.obj', (object) => {
+      model = object;
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDimension = Math.max(size.x, size.y, size.z);
+      let scale = 1 / maxDimension;
+      scale *= 1.5;
+      model.scale.set(scale, scale, scale);
+
+      const pos = getRandomPosition();
+      model.position.set(pos.x, -1, pos.z);
+      model.rotation.y = Math.PI
+
+      model.castShadow = true
+      model.receiveShadow = true
+
+      scene.add(model);
+      loadGhost();
+    }, undefined, (error) => {
+      console.error(error);
+    });
+  }, undefined, (error) => {
+    console.error(error);
+  });
+}
+
 
 let ghost;
 function loadGhost() {
   const loaderG = new OBJLoader();
   loaderG.load('Ghost.obj', (object) => {
     ghost = object;
-    ghost.traverse((child) => {
-      if (child.isMesh) {
-        child.material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-      }
-    });
+    ghost.material = new THREE.MeshStandardMaterial({ color: 0xffffff });
 
     let pos;
     do {
@@ -118,28 +166,46 @@ let direction = DOWN;
 let moveInterval;
 let moveSpeed = 500;
 let speedGhost = 600;
-let defaultSpeed = moveSpeed
-let bonusSpeed = 400;
 
 document.addEventListener('keydown', (event) => {
   if (!model) return;
 
   switch (event.key) {
     case 'ArrowUp':
-      direction = UP;
-      model.rotation.y = Math.PI;
+      direction = UP
+      if(character==="Spongebob") {
+        model.rotation.y = 0;
+     }
+     else if(character==="Patrick") {
+       model.rotation.y = Math.PI;
+     }
       break;
     case 'ArrowDown':
-      direction = DOWN;
-      model.rotation.y = 0;
+      direction = DOWN
+      if(character==="Spongebob") {
+        model.rotation.y = Math.PI;
+     }
+     else if(character==="Patrick") {
+       model.rotation.y = 0;
+     }
       break;
     case 'ArrowLeft':
-      direction = LEFT;
-      model.rotation.y = -Math.PI / 2;
+      direction = LEFT
+      if(character==="Spongebob") {
+         model.rotation.y = Math.PI / 2;
+      }
+      else if(character==="Patrick") {
+        model.rotation.y = -Math.PI / 2;
+      }
       break;
     case 'ArrowRight':
-      direction = RIGHT;
-      model.rotation.y = Math.PI / 2;
+      direction = RIGHT
+      if(character==="Spongebob") {
+        model.rotation.y = -Math.PI / 2;
+     }
+     else if(character==="Patrick") {
+       model.rotation.y = Math.PI / 2;
+     }
       break;
   }
 });
@@ -163,16 +229,6 @@ function moveModel() {
   checkSphereCollision();
   checkBoxCollision();
   checkGhostCollision();
-}
-
-let blocked = false;
-
-function freezeGhost() {
-  blocked = true; // Imposta blocked a true
-
-  setTimeout(() => {
-    blocked = false; // Dopo 10 secondi, reimposta blocked a false
-  }, 10000); // 10000 millisecondi = 10 secondi
 }
 
 
@@ -212,9 +268,8 @@ function moveGhostTowardsModel() {
   }
 }
 
-const ambLight = new THREE.AmbientLight(0xffffff, 0.6);
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-dirLight.position.set(20, 20, 20);
+const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+dirLight.position.set(10, 10, 10);
 dirLight.target.position.set(resolution.x / 2, 0, resolution.y / 2);
 dirLight.castShadow = true; // Abilita le ombre per la luce direzionale
 
@@ -226,7 +281,7 @@ dirLight.shadow.camera.bottom = -resolution.y / 2;
 dirLight.shadow.camera.left = -resolution.x / 2;
 dirLight.shadow.camera.right = resolution.x / 2;
 
-scene.add(ambLight, dirLight);
+scene.add(dirLight);
 
 
 function animate() {
@@ -237,19 +292,6 @@ function animate() {
 }
 
 animate();
-
-function handleResize() {
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
-
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-
-  renderer.setSize(sizes.width, sizes.height);
-
-  const pixelRatio = Math.min(window.devicePixelRatio, 2);
-  renderer.setPixelRatio(pixelRatio);
-}
 
 function updateBackground(texturePath, planeColor) {
   loader.load(texturePath, function(texture) {
@@ -268,31 +310,17 @@ document.querySelectorAll('input[name="mode"]').forEach((radio) => {
 
 const playButton = document.getElementById('playButton');
 const stopButton = document.getElementById('stopButton');
+const resumeButton = document.getElementById('resumeButton');
 const resetButton = document.getElementById('resetButton');
 
 let gameStarted = false;
-let startTime; // Variabile per memorizzare il tempo di inizio
-let endTime; // Variabile per memorizzare il tempo di fine
-let win = false
+let startTime; 
+let endTime; 
+let seconds;
 
 function calculateTime() {
-  const elapsedTime = endTime - startTime; // Calcola il tempo trascorso in millisecondi
-  const seconds = Math.floor(elapsedTime / 1000); // Converti il tempo in secondi
-  const username = document.getElementById('username').textContent.trim(); // Ottieni l'username
-
-  // Mostra un messaggio di vittoria con SweetAlert
-  Swal.fire({
-    title: 'Congratulations!',
-    text: `You completed the game in ${seconds} seconds`,
-    icon: 'success',
-    confirmButtonText: 'OK'
-  });
-
-  // Aggiungi il tempo e l'username alla classifica
-  const winners = document.getElementById('winners');
-  const entry = document.createElement('div');
-  entry.textContent = `${username}: ${seconds} seconds`;
-  winners.appendChild(entry);
+  const elapsedTime = endTime - startTime; 
+  seconds = Math.floor(elapsedTime / 1000); 
 }
 
 playButton.addEventListener('click', async () => {
@@ -315,7 +343,6 @@ playButton.addEventListener('click', async () => {
       resetGame()    
     }
     if (!gameStarted) {
-      loadModels();
       gameStarted = true;
       if (!moveInterval) {
         moveInterval = setInterval(moveModel, moveSpeed);
@@ -324,19 +351,57 @@ playButton.addEventListener('click', async () => {
         startBoxGeneration()
       }
       generateFallingSpheres();
-      //animatePrismFalling(prism); // Start falling prism animation
     }
   }
 });
-
 
 stopButton.addEventListener('click', () => {
   stopGame();
 });
 
+resumeButton.addEventListener('click', () => {
+  moveInterval = setInterval(moveModel, moveSpeed);
+});
+
 resetButton.addEventListener('click', () => {
   resetGame();
 });
+
+function resetGame() {
+  stopGame();
+  document.querySelectorAll('input[name="character"]').forEach(radio => {
+    radio.checked = false;
+  });
+  redSphereCount = redSphere
+  greenSphereCount = greenSphere
+  document.getElementById('username').textContent = ``;
+  document.getElementById('score').textContent = ``;
+  scene.remove(ghost);
+  scene.remove(model);
+
+  for(let i=0; i<prisms.length; i++) {
+     scene.remove(prisms[i])
+  }
+  for (let i = 0; i < spheres.length; i++) {
+    scene.remove(spheres[i]);
+  }
+  for (let i = 0; i < rocks.length; i++) {
+    scene.remove(rocks[i]);
+  }
+  for (let i = 0; i < boxes.length; i++) {
+    scene.remove(boxes[i]);
+  }
+  spheres = [];
+  rocks = []
+  gameStarted = false;
+}
+
+function stopGame() {
+  clearInterval(moveInterval);
+  stopBoxGeneration();
+  moveInterval = null;
+  gameStarted = false;
+}
 
 document.querySelectorAll('input[name="difficulty"]').forEach((radio) => {
   radio.addEventListener('change', (event) => {
@@ -345,7 +410,6 @@ document.querySelectorAll('input[name="difficulty"]').forEach((radio) => {
       case 'easy':
         moveSpeed = 500;
         speedGhost = 600;
-        bonusSpeed = 400;
         redSphere = 3;
         greenSphere = 2;
         yellowSphere = 0;
@@ -356,7 +420,6 @@ document.querySelectorAll('input[name="difficulty"]').forEach((radio) => {
       case 'medium':
         moveSpeed = 300;
         speedGhost = 400;
-        bonusSpeed = 200;
         redSphere = 5;
         greenSphere = 2;
         yellowSphere = 3;
@@ -367,7 +430,6 @@ document.querySelectorAll('input[name="difficulty"]').forEach((radio) => {
       case 'hard':
         moveSpeed = 100;
         speedGhost = 200;
-        bonusSpeed = 50;
         redSphere = 10;
         greenSphere = 5;
         yellowSphere = 5;
@@ -380,7 +442,7 @@ document.querySelectorAll('input[name="difficulty"]').forEach((radio) => {
   });
 });
 
-let numPrism = 1; // Riferimento al prisma viola
+let numPrism = 1; 
 let redSphere = 3;
 let greenSphere = 2;
 let yellowSphere = 0;
@@ -487,7 +549,7 @@ function createRocks(color) {
 
 }
 
-function createBox(color) {
+function createBox() {
   setTimeout(() => {
     let pos = getRandomPosition();
     while (isPositionOccupied(pos)) {
@@ -529,28 +591,20 @@ function checkBoxCollision() {
       scene.remove(box);
       boxes.splice(i, 1);
 
-      // Applica effetti in base al tipo di box
-      const effectType = Math.random(); // Genera un numero casuale per determinare l'effetto
+      const effectType = Math.random();
 
-      if (effectType < 0.33) {
+      if (effectType < 0.5) {
         // Effetto: punti doppi per 10 secondi
         applyDoublePointsEffect();
-      } else if (effectType < 0.66) {
+      } else {
         // Effetto: punti dimezzati per 10 secondi
         applyHalfPointsEffect();
-      } else {
-        // Effetto: rallenta il ghost per 10 secondi
-        applySpeedEffect();
       }
-
-      // Avvia il countdown per 10 secondi
       startEffectTimer();
-      // Aggiungi punti al punteggio del model
     }
   }
 }
 
-let originalPoints = { red: 10, green: 20, yellow: -10 };
 let currentEffect = null;
 
 function applyDoublePointsEffect() {
@@ -571,13 +625,6 @@ function applyHalfPointsEffect() {
   currentEffect = 'half';
 }
 
-function applySpeedEffect() {
-  console.log("speed")
-  clearInterval(moveInterval)
-  moveInterval = setInterval(moveModel, bonusSpeed);
-  currentEffect = 'speed';
-}
-
 function resetPoints() {
   for(let i=0; i<spheres.length; i++) {
     const sphere = spheres[i];
@@ -595,14 +642,12 @@ function resetPoints() {
       sphere.userData.points = -10
     }
   }
-  clearInterval(moveInterval)
-  moveInterval = setInterval(moveModel, moveSpeed);
 }
 
 let effectTimeout;
 
 function startEffectTimer() {
-  clearTimeout(effectTimeout); // Assicura che il timer precedente sia cancellato
+  clearTimeout(effectTimeout); 
   effectTimeout = setTimeout(() => {
     resetPoints();
     currentEffect = null;
@@ -611,7 +656,7 @@ function startEffectTimer() {
 
 
 function isPositionOccupied(pos) {
-  // Controllo per verificare se la posizione è occupata da model, ghost, altre sfere, rocce o prisma
+
   if (model && Math.round(pos.x) === Math.round(model.position.x) && Math.round(pos.z) === Math.round(model.position.z)) {
     return true;
   }
@@ -643,8 +688,8 @@ function isPositionOccupied(pos) {
 function checkGhostCollision() {
   if (model && ghost && Math.round(model.position.x) === Math.round(ghost.position.x) && Math.round(model.position.z) === Math.round(ghost.position.z)) {
     // Fermare il gioco e mostrare il messaggio di game over
-    clearInterval(moveInterval); // Ferma il movimento del modello e del ghost
-    startBoxGeneration()
+    clearInterval(moveInterval); 
+    stopBoxGeneration()
     Swal.fire({
       title: 'Game over!',
       text: 'Try again!',
@@ -658,41 +703,6 @@ function checkGhostCollision() {
   }
 }
 
-function resetGame() {
-  stopGame();
-  document.getElementById('username').textContent = ``;
-  document.getElementById('score').textContent = ``;
-  scene.remove(ghost);
-  scene.remove(model);
-
-  for(let i=0; i<prisms.length; i++) {
-     scene.remove(prisms[i])
-  }
-  for (let i = 0; i < spheres.length; i++) {
-    scene.remove(spheres[i]);
-  }
-  for (let i = 0; i < rocks.length; i++) {
-    scene.remove(rocks[i]);
-  }
-  for (let i = 0; i < boxes.length; i++) {
-    scene.remove(boxes[i]);
-  }
-  spheres = [];
-  rocks = []
-  gameStarted = false;
-}
-
-function stopGame(win) {
-  clearInterval(moveInterval);
-  stopBoxGeneration();
-  moveInterval = null;
-  gameStarted = false;
-  endTime = Date.now(); // Memorizza il tempo di fine
-  win = win; // Imposta lo stato di vittoria
-  if (win) {
-    calculateTime(); // Calcola il tempo trascorso solo se ha vinto
-  }
-}
 
 let redSphereCount = redSphere
 let greenSphereCount = greenSphere
@@ -716,10 +726,12 @@ function checkSphereCollision() {
       addToScore(sphere.userData.points);
     }
     if (redSphereCount===0 && greenSphereCount===0) {
+      endTime = Date.now(); // Memorizza il tempo di fineù
+      calculateTime()
       stopGame()
       Swal.fire({
         title: 'You have win!',
-        text: 'Play again!',
+        text:  `You completed the game in ${seconds} seconds`,
         icon: 'success',
         confirmButtonText: 'OK'
       }).then((result) => {
@@ -750,28 +762,16 @@ function checkSphereCollision() {
       })
     }
   }
-  const remainingRedBlueSpheres = spheres.filter(sphere => sphere.userData.color === 'red' || sphere.userData.color === 'green');
-  /*if (remainingRedBlueSpheres.length === 0) {
-    // Vittoria
-    const elapsedTime = (Date.now() - startTime) / 1000; // Calcola il tempo trascorso in secondi
-        // Ferma il gioco
-        clearInterval(moveInterval);
+}
 
-        // Registra il tempo di vittoria
-        const winner = elapsedTime.toFixed(2);
-    Swal.fire({
-      title: 'You have win!',
-      text: 'Vittoria! Punteggio finale:'+ score + 'Tempo:' + winner + 'secondi',
-      icon: 'success',
-      confirmButtonText: 'OK'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        resetGame()
-      }
-    });
+let blocked = false;
 
+function freezeGhost() {
+  blocked = true; // Imposta blocked a true
 
-  }*/
+  setTimeout(() => {
+    blocked = false; // Dopo 10 secondi, reimposta blocked a false
+  }, 10000); // 10000 millisecondi = 10 secondi
 }
 
 function addToScore(points) {
@@ -780,5 +780,3 @@ function addToScore(points) {
   currentScore += points;
   scoreElement.innerHTML = currentScore;
 }
-
-window.addEventListener('resize', handleResize);

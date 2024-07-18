@@ -1,132 +1,150 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-        display: flex;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #1a1a1a;
-        color: #f0f0f0;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      #container {
-        display: flex;
-        height: 100vh;
-        width: 100%;
-      }
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden; /* Nasconde le scrollbar */
+      display: flex;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1a1a1a;
+      color: #f0f0f0;
+    }
 
-      #game-container {
-        flex-grow: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #222;
-        transition: background-color 0.3s;
-      }
+    #container {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      width: 100%;
+    }
 
-      #game-container:hover {
-        background-color: #333;
-      }
+    #game-container {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #222;
+      transition: background-color 0.3s;
+    }
 
-      #control-panel {
-        width: 250px;
-        height: 100vh;
-        background: linear-gradient(135deg, #202020, #282828);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-      }
+    #game-container:hover {
+      background-color: #333;
+    }
 
-      button {
-        width: 100%;
-        padding: 10px;
-        margin: 10px 0;
-        background-color: #444;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s, transform 0.3s;
-      }
+    #control-panel {
+      width: 250px;
+      height: 100%;
+      background: linear-gradient(135deg, white, white);
+      color: black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      overflow-y: auto; /* Assicura che non ci siano scrollbar orizzontali */
+    }
 
-      button:hover {
-        background-color: #555;
-        transform: scale(1.05);
-      }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      background-color: brown;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+    }
 
-      button:active {
-        background-color: #666;
-      }
+    button:hover {
+      background-color: brown;
+      transform: scale(1.05);
+    }
 
-      h3, h2 {
-        margin: 15px 0 10px 0;
-      }
+    button:active {
+      background-color: brown;
+    }
 
-      label {
-        margin: 5px 0;
-      }
+    h3, h2 {
+      margin: 15px 0 10px 0;
+      color: brown;
+    }
 
-      input[type="radio"] {
-        margin-right: 10px;
-      }
+    label {
+      margin: 5px 0;
+    }
 
-      #score {
-        font-size: 24px;
-        font-weight: bold;
-      }
-      #username {
-        font-size: 24px;
-        font-weight: bold;
-      }
-      #winners {
-        font-size: 24px;
-        font-weight: bold;
-      }
-    </style>
-    <title>Interactive Graphics - Final Project</title>
-  </head>
-  <body>
-    <div id="container">
-      <div id="control-panel">
-        <button id="playButton">Play</button>
-        <button id="stopButton">Stop</button>
-        <button id="resetButton">Reset</button>
-        <h3>Difficulty</h3>
-        <label>
-          <input type="radio" id="e" name="difficulty" value="easy" checked> Easy
-        </label>
-        <label>
-          <input type="radio" id="m" name="difficulty" value="medium"> Medium
-        </label>
-        <label>
-          <input type="radio" id="h" name="difficulty" value="hard"> Hard
-        </label>
-        <h3>Mode</h3>
-        <label>
-          <input type="radio" name="mode" value="./background.png" data-color="#1E90FF" checked> Day
-        </label>
-        <label>
-          <input type="radio" name="mode" value="./night.jpg" data-color="#990066"> Nigth
-        </label>
-        <h2>Username:</h2>
-        <div id="username"></div>
-        <h2>Score:</h2>
-        <div id="score">0</div>
-        <div id="winners">Last winners:</div>
-      </div>
-      <div id="game-container"></div>
+    input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    #score {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    #username {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    #winners {
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+  <title>Interactive Graphics - Final Project</title>
+</head>
+<body>
+  <div id="container">
+    <div id="control-panel">
+      <h2 style="font-family:cursive;">Avoid the ghost!</h2>
+      <button id="playButton">Play</button>
+      <button id="stopButton">Stop</button>
+      <button id="resumeButton">Resume</button>
+      <button id="resetButton">Reset</button>
+      <h3>Difficulty</h3>
+      <label>
+        <input type="radio" id="e" name="difficulty" value="easy" checked> Easy
+      </label>
+      <label>
+        <input type="radio" id="m" name="difficulty" value="medium"> Medium
+      </label>
+      <label>
+        <input type="radio" id="h" name="difficulty" value="hard"> Hard
+      </label>
+      <h3>Character:</h3>
+      <label>
+        <input type="radio" name="character" value="Patrick"> Patrick
+      </label>
+      <label>
+        <input type="radio" name="character" value="Spongebob"> Spongebob
+      </label>
+      <h3>Mode</h3>
+      <label>
+        <input type="radio" name="mode" value="./background.png" data-color="#1E90FF" checked> Day
+      </label>
+      <label>
+        <input type="radio" name="mode" value="./night.jpg" data-color="#990066"> Night
+      </label>
+      <h2>Username:</h2>
+      <div id="username"></div>
+      <h2>Score:</h2>
+      <div id="score">0</div>
     </div>
-    <script type="module" src="main.js"></script>
-  </body>
+    <div id="game-container"></div>
+  </div>
+  <script type="module" src="main.js"></script>
+</body>
 </html>
