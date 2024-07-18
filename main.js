@@ -17,7 +17,7 @@ const initialTexture = loader.load('./background.png', function(texture) {
   scene.background = texture;
 });
 
-const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(70, sizes.width / sizes.height, 0.1, 1000);
 camera.position.set(8 + resolution.x / 2, resolution.x / 2, resolution.y + 6);
 camera.lookAt(new THREE.Vector3(0, 2.5, 0));
 
